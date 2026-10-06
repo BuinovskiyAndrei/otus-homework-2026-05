@@ -24,7 +24,17 @@ class EmailVerifier
      */
     public function isValidMXRecord(string $email): bool
     {
-        $domain = substr(strstr($email, '@'), 1);
+        $lastAtPos = strrpos($email, '@');
+
+        if ($lastAtPos === false) {
+            return false;
+        }
+
+        $domain = substr($email,  $lastAtPos + 1);
+
+        if ($domain === '') {
+            return false;
+        }
         return checkdnsrr($domain, 'MX');
     }
 
