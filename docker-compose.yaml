@@ -1,0 +1,22 @@
+services:
+  otus-homework-nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    image: otus-homework-nginx:latest
+    container_name: otus-homework-nginx
+    volumes:
+      - ./public:/var/www/public:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - otus-homework-php-fpm
+
+  otus-homework-php-fpm:
+    build:
+      context: ./docker/php-fpm
+      dockerfile: Dockerfile
+    image: otus-homework-php-fpm:latest
+    container_name: otus-homework-php-fpm
+    volumes:
+      - .:/var/www
