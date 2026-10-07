@@ -20,7 +20,7 @@ CREATE TABLE attributes
     name              VARCHAR(255) NOT NULL,
     value_kind        VARCHAR(20)  NOT NULL
         CONSTRAINT attributes_value_kind_chk
-            CHECK (value_kind IN ('text', 'boolean', 'date', 'numeric'))
+            CHECK (value_kind IN ('text', 'boolean', 'date', 'integer', 'decimal'))
 );
 
 -- Таблица "Значения" (typed EAV: тип колонки соответствует value_kind атрибута)
@@ -32,10 +32,11 @@ CREATE TABLE attribute_values
     value_text     TEXT,
     value_date     DATE,
     value_boolean  BOOLEAN,
-    value_numeric  NUMERIC(12, 4),
+    value_integer  BIGINT,
+    value_decimal  NUMERIC(12, 4),
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT attribute_values_single_value_chk
-        CHECK (num_nonnulls(value_text, value_date, value_boolean, value_numeric) = 1)
+        CHECK (num_nonnulls(value_text, value_date, value_boolean, value_integer, value_decimal) = 1)
 );
 
 CREATE UNIQUE INDEX idx_attribute_values_film_attribute

@@ -5,8 +5,9 @@ SELECT f.name  AS film_name,
        COALESCE(
                av.value_text,
                TO_CHAR(av.value_date, 'YYYY-MM-DD'),
+               av.value_integer::TEXT,
                CASE
-                   WHEN av.value_numeric IS NOT NULL THEN trim_scale(av.value_numeric)::TEXT
+                   WHEN av.value_decimal IS NOT NULL THEN trim_scale(av.value_decimal)::TEXT
                    END,
                CASE
                    WHEN av.value_boolean IS NOT NULL THEN
