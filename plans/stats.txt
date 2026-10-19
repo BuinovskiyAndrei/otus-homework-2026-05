@@ -1,0 +1,47 @@
+ object_name | total_size | total_bytes 
+-------------+------------+-------------
+ theaters    | 394 MB     |   413376512
+ clients     | 393 MB     |   412049408
+ movies      | 315 MB     |   330186752
+ tickets     | 168 kB     |      172032
+ sessions    | 136 kB     |      139264
+ seats       | 56 kB      |       57344
+ halls       | 24 kB      |       24576
+(7 rows)
+
+                index_name                | table_name | index_size | index_bytes 
+------------------------------------------+------------+------------+-------------
+ theaters_pkey                            | theaters   | 72 MB      |    75112448
+ clients_pkey                             | clients    | 71 MB      |    74891264
+ movies_pkey                              | movies     | 71 MB      |    74891264
+ tickets_pkey                             | tickets    | 32 kB      |       32768
+ sessions_pkey                            | sessions   | 32 kB      |       32768
+ idx_sessions_start_time                  | sessions   | 32 kB      |       32768
+ idx_tickets_session_id                   | tickets    | 32 kB      |       32768
+ idx_tickets_session_sold_at              | tickets    | 32 kB      |       32768
+ idx_tickets_sold_at                      | tickets    | 16 kB      |       16384
+ idx_sessions_movie_id                    | sessions   | 16 kB      |       16384
+ idx_seats_hall_id                        | seats      | 16 kB      |       16384
+ seats_hall_id_row_number_seat_number_key | seats      | 16 kB      |       16384
+ seats_pkey                               | seats      | 16 kB      |       16384
+ halls_pkey                               | halls      | 16 kB      |       16384
+(14 rows)
+
+ schemaname | table_name |  index_name   | idx_scan | idx_tup_read 
+------------+------------+---------------+----------+--------------
+ public     | halls      | halls_pkey    |      565 |          565
+ public     | sessions   | sessions_pkey |      549 |          549
+ public     | movies     | movies_pkey   |      543 |          571
+ public     | seats      | seats_pkey    |      536 |          536
+ public     | clients    | clients_pkey  |      529 |          529
+(5 rows)
+
+ schemaname | table_name |       index_name       | idx_scan | index_size 
+------------+------------+------------------------+----------+------------
+ public     | tickets    | idx_tickets_session_id |        0 | 32 kB
+ public     | tickets    | tickets_pkey           |        0 | 32 kB
+ public     | sessions   | idx_sessions_movie_id  |        0 | 16 kB
+ public     | tickets    | idx_tickets_sold_at    |        0 | 16 kB
+ public     | seats      | idx_seats_hall_id      |        0 | 16 kB
+(5 rows)
+
