@@ -10,6 +10,7 @@ final readonly class SearchCriteria
         public string $query,
         public ?int $maxPrice = null,
         public bool $inStockOnly = false,
+        public ?string $category = null,
     ) {
     }
 }

@@ -18,13 +18,13 @@ if ($command === 'index') {
 }
 
 if ($command === 'search') {
-    [$query, $maxPrice, $inStock] = parseSearchArgs($argv);
+    [$query, $maxPrice, $inStock, $category] = parseSearchArgs($argv);
     if ($query === null || $query === '') {
-        fwrite(STDERR, "Usage: php bin/app.php search --q=QUERY [--max-price=N] [--in-stock]\n");
+        fwrite(STDERR, "Usage: php bin/app.php search --q=QUERY [--max-price=N] [--in-stock] [--category=CATEGORY]\n");
         exit(1);
     }
 
-    $criteria = new SearchCriteria($query, $maxPrice, $inStock);
+    $criteria = new SearchCriteria($query, $maxPrice, $inStock, $category);
     $hits = (new ElasticsearchProductSearchRepository())->search($criteria);
     printTable($hits);
     exit(0);
@@ -32,17 +32,18 @@ if ($command === 'search') {
 
 fwrite(STDERR, "Usage:\n");
 fwrite(STDERR, "  php bin/app.php index [path/to/products.json]\n");
-fwrite(STDERR, "  php bin/app.php search --q=QUERY [--max-price=N] [--in-stock]\n");
+fwrite(STDERR, "  php bin/app.php search --q=QUERY [--max-price=N] [--in-stock] [--category=CATEGORY]\n");
 exit(1);
 
 /**
- * @return array{0: ?string, 1: ?int, 2: bool}
+ * @return array{0: ?string, 1: ?int, 2: bool, 3: ?string}
  */
 function parseSearchArgs(array $argv): array
 {
     $query = null;
     $maxPrice = null;
     $inStock = false;
+    $category = null;
 
     for ($i = 2, $n = count($argv); $i < $n; $i++) {
         $arg = $argv[$i];
@@ -60,16 +61,26 @@ function parseSearchArgs(array $argv): array
             continue;
         }
         if (str_starts_with($arg, '--max-price=')) {
-            $maxPrice = (int) substr($arg, 12);
+            $maxPrice = (int)substr($arg, 12);
             continue;
         }
         if ($arg === '--max-price' && isset($argv[$i + 1])) {
-            $maxPrice = (int) $argv[++$i];
+            $maxPrice = (int)$argv[++$i];
+            continue;
+        }
+        if (str_starts_with($arg, '--category=')) {
+            $value = substr($arg, 11);
+            $category = $value === '' ? null : $value;
+            continue;
+        }
+        if ($arg === '--category' && isset($argv[$i + 1])) {
+            $value = $argv[++$i];
+            $category = $value === '' ? null : $value;
             continue;
         }
     }
 
-    return [$query, $maxPrice, $inStock];
+    return [$query, $maxPrice, $inStock, $category];
 }
 
 function runIndex(string $path, ProductSearchRepositoryInterface $repository): void
@@ -103,12 +114,12 @@ function printTable(array $hits): void
     $rows = [];
     foreach ($hits as $hit) {
         $rows[] = [
-            sprintf('%.4f', $hit->score),
-            (string) $hit->id,
-            $hit->title,
-            $hit->category,
-            (string) $hit->price,
-            (string) $hit->stock,
+                sprintf('%.4f', $hit->score),
+                (string)$hit->id,
+                $hit->title,
+                $hit->category,
+                (string)$hit->price,
+                (string)$hit->stock,
         ];
     }
 
@@ -134,7 +145,7 @@ function printTable(array $hits): void
         return '| ' . implode(' | ', $parts) . ' |';
     };
 
-    $separator = '+-' . implode('-+-', array_map(static fn (int $w) => str_repeat('-', $w), $widths)) . '-+';
+    $separator = '+-' . implode('-+-', array_map(static fn(int $w) => str_repeat('-', $w), $widths)) . '-+';
 
     echo $separator . "\n";
     echo $line($headers) . "\n";

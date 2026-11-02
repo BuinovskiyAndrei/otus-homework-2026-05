@@ -42,7 +42,13 @@ final class ElasticsearchProductSearchRepository implements ProductSearchReposit
                 'mappings' => [
                     'properties' => [
                         'title' => ['type' => 'text', 'analyzer' => 'ru'],
-                        'category' => ['type' => 'text', 'analyzer' => 'ru'],
+                        'category' => [
+                            'type' => 'text',
+                            'analyzer' => 'ru',
+                            'fields' => [
+                                'keyword' => ['type' => 'keyword'],
+                            ],
+                        ],
                         'price' => ['type' => 'integer'],
                         'stock' => ['type' => 'integer'],
                     ],
@@ -79,8 +85,13 @@ final class ElasticsearchProductSearchRepository implements ProductSearchReposit
         if ($criteria->maxPrice !== null) {
             $filters[] = ['range' => ['price' => ['lt' => $criteria->maxPrice]]];
         }
+
         if ($criteria->inStockOnly) {
             $filters[] = ['range' => ['stock' => ['gt' => 0]]];
+        }
+
+        if ($criteria->category !== null) {
+            $filters[] = ['term' => ['category.keyword' => $criteria->category]];
         }
 
         $body = [
@@ -90,7 +101,7 @@ final class ElasticsearchProductSearchRepository implements ProductSearchReposit
                         [
                             'multi_match' => [
                                 'query' => $criteria->query,
-                                'fields' => ['title^2', 'category'],
+                                'fields' => ['title^2'],
                                 'fuzziness' => 'AUTO',
                             ],
                         ],
