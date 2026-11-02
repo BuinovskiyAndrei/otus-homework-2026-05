@@ -1,21 +1,23 @@
--- Топ-15 объектов по размеру (таблицы с индексами) и индексы отдельно
-
-SELECT c.relname AS object_name,
-       pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
-       pg_total_relation_size(c.oid) AS total_bytes
-FROM pg_class c
-         JOIN pg_namespace n ON n.oid = c.relnamespace
-WHERE n.nspname = 'public'
-  AND c.relkind = 'r'
-ORDER BY total_bytes DESC
-LIMIT 15;
-
-SELECT indexrelname AS index_name,
-       relname AS table_name,
-       pg_size_pretty(pg_relation_size(indexrelid)) AS index_size,
-       pg_relation_size(indexrelid) AS index_bytes
-FROM pg_stat_user_indexes
-ORDER BY pg_relation_size(indexrelid) DESC
+-- Топ-15 объектов: таблицы вместе с индексами и отдельные индексы, одна сортировка
+SELECT object_name,
+       object_kind,
+       pg_size_pretty(size_bytes) AS size,
+       size_bytes
+FROM (
+         SELECT c.relname AS object_name,
+                'table' AS object_kind,
+                pg_total_relation_size(c.oid) AS size_bytes
+         FROM pg_class c
+                  JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE n.nspname = 'public'
+           AND c.relkind = 'r'
+         UNION ALL
+         SELECT indexrelname,
+                'index',
+                pg_relation_size(indexrelid)
+         FROM pg_stat_user_indexes
+     ) objects
+ORDER BY size_bytes DESC
 LIMIT 15;
 
 -- 5 самых используемых индексов (idx_scan > 0 после прогона всех запросов)

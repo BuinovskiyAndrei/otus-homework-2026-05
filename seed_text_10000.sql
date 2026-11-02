@@ -29,17 +29,23 @@ SELECT 1 + (g % 3),
        300 + (g % 400)
 FROM generate_series(1, 500) AS g;
 
+-- На сеанс bulk — три разных места его зала.
+-- Общий generate_series давал один и тот же (session_id, место) три раза: шаг 500 делится на 5 и на 10.
 INSERT INTO tickets (session_id, seat_id, client_id, price, sold_at)
 SELECT s.session_id,
        st.seat_id,
-       1 + (g % 3333),
-       350 + (g % 300),
-       CURRENT_TIMESTAMP - ((g % 10) || ' days')::INTERVAL
-FROM generate_series(1, 1500) AS g
-         JOIN sessions s ON s.session_id = 7 + (g % 500)
-         JOIN seats st ON st.hall_id = s.hall_id
-    AND st.row_number = 1 + (g % 5)
-    AND st.seat_number = 1 + (g % 10);
+       1 + ((s.session_id + st.seat_id) % 3333),
+       350 + (st.seat_id % 300),
+       CURRENT_TIMESTAMP - ((s.session_id % 10) || ' days')::INTERVAL
+FROM sessions s
+         JOIN LATERAL (
+    SELECT seat_id
+    FROM seats
+    WHERE hall_id = s.hall_id
+    ORDER BY seat_id
+    LIMIT 3
+) st ON true
+WHERE s.session_id >= 7;
 
 ANALYZE;
 

@@ -67,17 +67,16 @@ Q6      0.06   0.06      0.06
 - `idx_sessions_start_time` — сеансы «сегодня»
 - `idx_tickets_session_id`, `idx_tickets_sold_at`, `idx_tickets_session_sold_at`
 - `idx_sessions_movie_id`, `idx_seats_hall_id`
+- `idx_tickets_session_seat` — уникальный `(session_id, seat_id)`: одно место на сеанс
 
-Unique на (session_id, seat_id) не стал делать — в seed при bulk в tickets дубликаты, index не создался. Для прода сначала почистить данные.
+В `seed_text_10000.sql` билеты bulk вешаются на три разных места сеанса, поэтому уникальный индекс создаётся.
 
 Параметры postgres в docker не крутил.
 
 ## размеры (10M + индексы)
 
-Из `plans/stats.txt`, таблицы целиком с индексами:
-theaters ~394M, clients ~393M, movies ~315M, дальше tickets/sessions/seats уже килобайты.
-
-Крупные индексы — pkey на theaters/clients/movies (~71–72M).
+Из `plans/stats.txt` один список: таблицы с индексами (`pg_total_relation_size`) и отдельные индексы, общая сортировка, `LIMIT 15`.
+Вверху theaters / clients / movies (~394M / ~393M / ~315M), сразу за ними их primary key (~71–72M). Дальше уже килобитные объекты. Индексы по 16 kB в топ-15 не входят.
 
 По idx_scan после пары прогонов queries: чаще всего primary key на halls/sessions/movies.  
 Нули на idx_tickets_session_id, idx_tickets_sold_at и т.д. — таблица маленькая, optimizer не берёт.  

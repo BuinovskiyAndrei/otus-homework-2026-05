@@ -1,31 +1,21 @@
- object_name | total_size | total_bytes 
--------------+------------+-------------
- theaters    | 394 MB     |   413376512
- clients     | 393 MB     |   412049408
- movies      | 315 MB     |   330186752
- tickets     | 168 kB     |      172032
- sessions    | 136 kB     |      139264
- seats       | 56 kB      |       57344
- halls       | 24 kB      |       24576
-(7 rows)
-
-                index_name                | table_name | index_size | index_bytes 
-------------------------------------------+------------+------------+-------------
- theaters_pkey                            | theaters   | 72 MB      |    75112448
- clients_pkey                             | clients    | 71 MB      |    74891264
- movies_pkey                              | movies     | 71 MB      |    74891264
- tickets_pkey                             | tickets    | 32 kB      |       32768
- sessions_pkey                            | sessions   | 32 kB      |       32768
- idx_sessions_start_time                  | sessions   | 32 kB      |       32768
- idx_tickets_session_id                   | tickets    | 32 kB      |       32768
- idx_tickets_session_sold_at              | tickets    | 32 kB      |       32768
- idx_tickets_sold_at                      | tickets    | 16 kB      |       16384
- idx_sessions_movie_id                    | sessions   | 16 kB      |       16384
- idx_seats_hall_id                        | seats      | 16 kB      |       16384
- seats_hall_id_row_number_seat_number_key | seats      | 16 kB      |       16384
- seats_pkey                               | seats      | 16 kB      |       16384
- halls_pkey                               | halls      | 16 kB      |       16384
-(14 rows)
+         object_name         | object_kind |  size  | size_bytes 
+-----------------------------+-------------+--------+------------
+ theaters                    | table       | 394 MB |  413376512
+ clients                     | table       | 393 MB |  412049408
+ movies                      | table       | 315 MB |  330186752
+ theaters_pkey               | index       | 72 MB  |   75112448
+ movies_pkey                 | index       | 71 MB  |   74891264
+ clients_pkey                | index       | 71 MB  |   74891264
+ tickets                     | table       | 168 kB |     172032
+ sessions                    | table       | 136 kB |     139264
+ seats                       | table       | 56 kB  |      57344
+ sessions_pkey               | index       | 32 kB  |      32768
+ tickets_pkey                | index       | 32 kB  |      32768
+ idx_sessions_start_time     | index       | 32 kB  |      32768
+ idx_tickets_session_id      | index       | 32 kB  |      32768
+ idx_tickets_session_sold_at | index       | 32 kB  |      32768
+ halls                       | table       | 24 kB  |      24576
+(15 rows)
 
  schemaname | table_name |  index_name   | idx_scan | idx_tup_read 
 ------------+------------+---------------+----------+--------------

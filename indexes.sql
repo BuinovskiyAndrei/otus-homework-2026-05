@@ -12,7 +12,7 @@ CREATE INDEX idx_tickets_session_sold_at ON tickets (session_id, sold_at);
 
 CREATE INDEX idx_seats_hall_id ON seats (hall_id);
 
--- Уникальность (session_id, seat_id) в seed нарушена bulk-вставкой билетов — перед продом нужна чистка дубликатов:
--- CREATE UNIQUE INDEX idx_tickets_session_seat ON tickets (session_id, seat_id);
+-- Одно место на сеанс продаётся один раз
+CREATE UNIQUE INDEX idx_tickets_session_seat ON tickets (session_id, seat_id);
 
 ANALYZE;
