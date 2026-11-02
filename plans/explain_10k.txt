@@ -1,0 +1,186 @@
+ANALYZE
+========== Q1 ==========
+                                                                  QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Unique  (cost=18.11..18.55 rows=35 width=39) (actual time=0.124..0.133 rows=3 loops=1)
+   Buffers: shared hit=7
+   ->  Sort  (cost=18.11..18.20 rows=35 width=39) (actual time=0.124..0.126 rows=38 loops=1)
+         Sort Key: m.title, m.movie_id, m.duration_minutes, m.genre
+         Sort Method: quicksort  Memory: 27kB
+         Buffers: shared hit=7
+         ->  Merge Join  (cost=16.56..17.21 rows=35 width=39) (actual time=0.084..0.091 rows=38 loops=1)
+               Merge Cond: (m.movie_id = s.movie_id)
+               Buffers: shared hit=7
+               ->  Index Scan using movies_pkey on movies m  (cost=0.28..133.32 rows=3336 width=39) (actual time=0.014..0.015 rows=4 loops=1)
+                     Buffers: shared hit=3
+               ->  Sort  (cost=16.28..16.37 rows=35 width=4) (actual time=0.066..0.068 rows=38 loops=1)
+                     Sort Key: s.movie_id
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=4
+                     ->  Seq Scan on sessions s  (cost=0.00..15.38 rows=35 width=4) (actual time=0.008..0.047 rows=38 loops=1)
+                           Filter: ((start_time >= CURRENT_DATE) AND (start_time < (CURRENT_DATE + '1 day'::interval)))
+                           Rows Removed by Filter: 468
+                           Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=63
+ Planning Time: 0.664 ms
+ Execution Time: 0.184 ms
+(23 rows)
+
+========== Q2 ==========
+                                                        QUERY PLAN                                                        
+--------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=30.57..30.58 rows=1 width=8) (actual time=0.309..0.310 rows=1 loops=1)
+   Buffers: shared hit=8
+   ->  Hash Join  (cost=15.39..29.63 rows=378 width=0) (actual time=0.120..0.292 rows=378 loops=1)
+         Hash Cond: (t.session_id = s.session_id)
+         Buffers: shared hit=8
+         ->  Seq Scan on tickets t  (cost=0.00..13.24 rows=378 width=4) (actual time=0.008..0.133 rows=378 loops=1)
+               Filter: (sold_at >= (CURRENT_TIMESTAMP - '7 days'::interval))
+               Rows Removed by Filter: 150
+               Buffers: shared hit=4
+         ->  Hash  (cost=9.06..9.06 rows=506 width=4) (actual time=0.101..0.101 rows=506 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 26kB
+               Buffers: shared hit=4
+               ->  Seq Scan on sessions s  (cost=0.00..9.06 rows=506 width=4) (actual time=0.004..0.040 rows=506 loops=1)
+                     Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=23
+ Planning Time: 0.295 ms
+ Execution Time: 0.354 ms
+(18 rows)
+
+========== Q3 ==========
+                                                                        QUERY PLAN                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=39.09..39.18 rows=35 width=69) (actual time=0.198..0.201 rows=38 loops=1)
+   Sort Key: s.start_time
+   Sort Method: quicksort  Memory: 28kB
+   Buffers: shared hit=14
+   ->  Hash Join  (cost=37.06..38.19 rows=35 width=69) (actual time=0.158..0.176 rows=38 loops=1)
+         Hash Cond: (s.hall_id = h.hall_id)
+         Buffers: shared hit=14
+         ->  Merge Join  (cost=16.56..17.21 rows=35 width=37) (actual time=0.094..0.105 rows=38 loops=1)
+               Merge Cond: (m.movie_id = s.movie_id)
+               Buffers: shared hit=7
+               ->  Index Scan using movies_pkey on movies m  (cost=0.28..133.32 rows=3336 width=24) (actual time=0.013..0.013 rows=4 loops=1)
+                     Buffers: shared hit=3
+               ->  Sort  (cost=16.28..16.37 rows=35 width=21) (actual time=0.078..0.080 rows=38 loops=1)
+                     Sort Key: s.movie_id
+                     Sort Method: quicksort  Memory: 26kB
+                     Buffers: shared hit=4
+                     ->  Seq Scan on sessions s  (cost=0.00..15.38 rows=35 width=21) (actual time=0.010..0.058 rows=38 loops=1)
+                           Filter: ((start_time >= CURRENT_DATE) AND (start_time < (CURRENT_DATE + '1 day'::interval)))
+                           Rows Removed by Filter: 468
+                           Buffers: shared hit=4
+         ->  Hash  (cost=20.46..20.46 rows=3 width=40) (actual time=0.035..0.035 rows=3 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=7
+               ->  Nested Loop  (cost=0.29..20.46 rows=3 width=40) (actual time=0.023..0.028 rows=3 loops=1)
+                     Buffers: shared hit=7
+                     ->  Seq Scan on halls h  (cost=0.00..1.03 rows=3 width=21) (actual time=0.002..0.003 rows=3 loops=1)
+                           Buffers: shared hit=1
+                     ->  Memoize  (cost=0.29..8.31 rows=1 width=27) (actual time=0.008..0.008 rows=1 loops=3)
+                           Cache Key: h.theater_id
+                           Cache Mode: logical
+                           Hits: 1  Misses: 2  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                           Buffers: shared hit=6
+                           ->  Index Scan using theaters_pkey on theaters th  (cost=0.28..8.30 rows=1 width=27) (actual time=0.009..0.009 rows=1 loops=2)
+                                 Index Cond: (theater_id = h.theater_id)
+                                 Buffers: shared hit=6
+ Planning:
+   Buffers: shared hit=50
+ Planning Time: 0.526 ms
+ Execution Time: 0.303 ms
+(39 rows)
+
+========== Q4 ==========
+                                                                     QUERY PLAN                                                                      
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=53.15..53.16 rows=3 width=56) (actual time=0.524..0.527 rows=1 loops=1)
+   Buffers: shared hit=11
+   ->  Sort  (cost=53.15..54.10 rows=378 width=56) (actual time=0.524..0.525 rows=1 loops=1)
+         Sort Key: (sum(t.price)) DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=11
+         ->  HashAggregate  (cost=43.54..48.26 rows=378 width=56) (actual time=0.513..0.516 rows=1 loops=1)
+               Group Key: m.movie_id
+               Batches: 1  Memory Usage: 37kB
+               Buffers: shared hit=11
+               ->  Nested Loop  (cost=15.68..41.65 rows=378 width=29) (actual time=0.152..0.451 rows=378 loops=1)
+                     Buffers: shared hit=11
+                     ->  Hash Join  (cost=15.39..29.63 rows=378 width=9) (actual time=0.132..0.302 rows=378 loops=1)
+                           Hash Cond: (t.session_id = s.session_id)
+                           Buffers: shared hit=8
+                           ->  Seq Scan on tickets t  (cost=0.00..13.24 rows=378 width=9) (actual time=0.009..0.123 rows=378 loops=1)
+                                 Filter: (sold_at >= (CURRENT_TIMESTAMP - '7 days'::interval))
+                                 Rows Removed by Filter: 150
+                                 Buffers: shared hit=4
+                           ->  Hash  (cost=9.06..9.06 rows=506 width=8) (actual time=0.112..0.113 rows=506 loops=1)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 28kB
+                                 Buffers: shared hit=4
+                                 ->  Seq Scan on sessions s  (cost=0.00..9.06 rows=506 width=8) (actual time=0.005..0.045 rows=506 loops=1)
+                                       Buffers: shared hit=4
+                     ->  Memoize  (cost=0.29..0.66 rows=1 width=24) (actual time=0.000..0.000 rows=1 loops=378)
+                           Cache Key: s.movie_id
+                           Cache Mode: logical
+                           Hits: 377  Misses: 1  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                           Buffers: shared hit=3
+                           ->  Index Scan using movies_pkey on movies m  (cost=0.28..0.65 rows=1 width=24) (actual time=0.017..0.017 rows=1 loops=1)
+                                 Index Cond: (movie_id = s.movie_id)
+                                 Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=36
+ Planning Time: 0.440 ms
+ Execution Time: 0.619 ms
+(36 rows)
+
+========== Q5 ==========
+                                                                       QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=21.43..21.47 rows=17 width=40) (actual time=0.176..0.179 rows=50 loops=1)
+   Sort Key: st.row_number, st.seat_number
+   Sort Method: quicksort  Memory: 27kB
+   Buffers: shared hit=8
+   ->  Hash Right Join  (cost=10.34..21.08 rows=17 width=40) (actual time=0.118..0.154 rows=50 loops=1)
+         Hash Cond: (tk.seat_id = st.seat_id)
+         Buffers: shared hit=8
+         ->  Seq Scan on tickets tk  (cost=0.00..10.60 rows=20 width=12) (actual time=0.026..0.053 rows=20 loops=1)
+               Filter: (session_id = 1)
+               Rows Removed by Filter: 508
+               Buffers: shared hit=4
+         ->  Hash  (cost=10.12..10.12 rows=17 width=16) (actual time=0.083..0.084 rows=50 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 11kB
+               Buffers: shared hit=4
+               ->  Hash Join  (cost=8.30..10.12 rows=17 width=16) (actual time=0.061..0.072 rows=50 loops=1)
+                     Hash Cond: (st.hall_id = s.hall_id)
+                     Buffers: shared hit=4
+                     ->  Seq Scan on seats st  (cost=0.00..1.50 rows=50 width=16) (actual time=0.005..0.007 rows=50 loops=1)
+                           Buffers: shared hit=1
+                     ->  Hash  (cost=8.29..8.29 rows=1 width=8) (actual time=0.023..0.023 rows=1 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                           Buffers: shared hit=3
+                           ->  Index Scan using sessions_pkey on sessions s  (cost=0.27..8.29 rows=1 width=8) (actual time=0.015..0.015 rows=1 loops=1)
+                                 Index Cond: (session_id = 1)
+                                 Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=28
+ Planning Time: 0.336 ms
+ Execution Time: 0.247 ms
+(29 rows)
+
+========== Q6 ==========
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10.70..10.71 rows=1 width=64) (actual time=0.046..0.046 rows=1 loops=1)
+   Buffers: shared hit=4
+   ->  Seq Scan on tickets  (cost=0.00..10.60 rows=20 width=5) (actual time=0.006..0.040 rows=20 loops=1)
+         Filter: (session_id = 1)
+         Rows Removed by Filter: 508
+         Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.122 ms
+ Execution Time: 0.058 ms
+(10 rows)
+

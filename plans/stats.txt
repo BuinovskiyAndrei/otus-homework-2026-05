@@ -1,0 +1,37 @@
+         object_name         | object_kind |  size  | size_bytes 
+-----------------------------+-------------+--------+------------
+ theaters                    | table       | 394 MB |  413376512
+ clients                     | table       | 393 MB |  412049408
+ movies                      | table       | 315 MB |  330186752
+ theaters_pkey               | index       | 72 MB  |   75112448
+ movies_pkey                 | index       | 71 MB  |   74891264
+ clients_pkey                | index       | 71 MB  |   74891264
+ tickets                     | table       | 168 kB |     172032
+ sessions                    | table       | 136 kB |     139264
+ seats                       | table       | 56 kB  |      57344
+ sessions_pkey               | index       | 32 kB  |      32768
+ tickets_pkey                | index       | 32 kB  |      32768
+ idx_sessions_start_time     | index       | 32 kB  |      32768
+ idx_tickets_session_id      | index       | 32 kB  |      32768
+ idx_tickets_session_sold_at | index       | 32 kB  |      32768
+ halls                       | table       | 24 kB  |      24576
+(15 rows)
+
+ schemaname | table_name |  index_name   | idx_scan | idx_tup_read 
+------------+------------+---------------+----------+--------------
+ public     | halls      | halls_pkey    |      565 |          565
+ public     | sessions   | sessions_pkey |      549 |          549
+ public     | movies     | movies_pkey   |      543 |          571
+ public     | seats      | seats_pkey    |      536 |          536
+ public     | clients    | clients_pkey  |      529 |          529
+(5 rows)
+
+ schemaname | table_name |       index_name       | idx_scan | index_size 
+------------+------------+------------------------+----------+------------
+ public     | tickets    | idx_tickets_session_id |        0 | 32 kB
+ public     | tickets    | tickets_pkey           |        0 | 32 kB
+ public     | sessions   | idx_sessions_movie_id  |        0 | 16 kB
+ public     | tickets    | idx_tickets_sold_at    |        0 | 16 kB
+ public     | seats      | idx_seats_hall_id      |        0 | 16 kB
+(5 rows)
+
